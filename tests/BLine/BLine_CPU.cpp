@@ -4,7 +4,7 @@
 #include <iostream>
 #include <omp.h>
 
-#define nthreads 16
+#define nthreads 28
 
 int main()
 {
@@ -28,7 +28,7 @@ int main()
 
     //double end = omp_get_wtime();
     double end = time(NULL);
-    printf("%d threads, elapsed time is %f\n", nthreads, end-start);
+    printf("%d threads, elapsed time is %f s.\n", nthreads, end-start);
    
     return 0;
 }
