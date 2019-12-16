@@ -17,7 +17,7 @@ int main()
 
     double start = omp_get_wtime();
 
-    #pragma omp parallel num_threads(nthreads)
+    //#pragma omp parallel num_threads(nthreads)
     	__gnu_parallel::sort(h_key_array.begin(), h_key_array.end());
 
     double end = omp_get_wtime();

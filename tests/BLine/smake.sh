@@ -5,6 +5,6 @@ rm -rf *.o
 /usr/local/cuda/bin/nvcc  -o BLine_Thrust.out BLine_Thrust.o 
 
 #cpu openmp gnu parallel
-g++ test_openmp.cpp -o test_openmp.out -fopenmp
+#g++ BLine_CPU.cpp -o BLine_CPU.out -fopenmp
 
 rm -rf *.o
