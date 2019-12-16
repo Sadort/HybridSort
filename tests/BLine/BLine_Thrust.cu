@@ -25,7 +25,8 @@ int main(void)
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     float milliseconds = 0;
-    float totalseconds = 0;
+
+    cudaEventRecord(start, 0);
 
     cudaMalloc( (void**)&d_key_array, number_of_elements * sizeof(uint64_t) );
     cudaMemcpy( d_key_array,
@@ -34,32 +35,21 @@ int main(void)
                 cudaMemcpyHostToDevice );
 
     thrust::device_ptr<uint64_t> th_key_array( d_key_array );
-
-    int iterations = 1;
-    for(int i = 0; i < iterations; i++)
-    {
-        cudaEventRecord(start, 0);
-        //thrust::sort_by_key( th_key_array, th_key_array+number_of_elements, th_value_array );
-        thrust::sort( th_key_array, th_key_array+number_of_elements );
-        
-        if(i == iterations - 1) break;
-        cudaMemcpy( d_key_array,
-                h_key_array,
-                number_of_elements * sizeof(uint64_t),
-                cudaMemcpyHostToDevice );
-    }
+    
+    //thrust::sort_by_key( th_key_array, th_key_array+number_of_elements, th_value_array );
+    thrust::sort( th_key_array, th_key_array+number_of_elements );
 
     cudaMemcpy( h_key_array,
                 d_key_array,
                 number_of_elements * sizeof(uint64_t),
                 cudaMemcpyDeviceToHost );
 
+    cudaDeviceSynchronize();
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&milliseconds, start, stop);
-    totalseconds = totalseconds + milliseconds;
 
-    printf("Elapsed time: %f s.\n", totalseconds/(iterations*1000));
+    printf("Elapsed time: %f s.\n", milliseconds/1000);
 
     //std::sort(h_key_ref.begin(), h_key_ref.end());
     //bool result = compareAB(h_key_array, h_key_ref);
