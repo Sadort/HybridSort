@@ -1,0 +1,70 @@
+#include <iostream> 
+#include <algorithm>
+#include <parallel/algorithm>
+#include <omp.h>
+#include "BLineMulti_Thrust.h"
+
+uint64_t number_of_elements = 2048L*1024*1024;
+uint64_t batch_size = 512L*1024*1024;
+int nthreads = 28;
+
+int main(void)
+{
+    int number_of_batches = number_of_elements / batch_size;
+    uint64_t *h_key_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
+    uint64_t *sorted_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
+    
+    for (uint64_t i = 0; i < number_of_elements; i++) {
+        h_key_array[i] = ((uint64_t)rand()) << 32 | (uint64_t)rand();
+    }
+    printf("size : %lu\n", sizeof(uint64_t));
+
+    /**************************/
+    /* Sorting batches on GPU */
+    /**************************/
+
+    cudaEvent_t GPUstart, GPUstop;
+    cudaEventCreate(&GPUstart);
+    cudaEventCreate(&GPUstop);
+    float GPU_milliseconds = 0;
+
+    cudaEventRecord(GPUstart, 0);
+
+    BLineMultiSort(h_key_array, number_of_elements, batch_size);
+
+    cudaEventRecord(GPUstop, 0);
+    cudaEventSynchronize(GPUstop);
+    cudaEventElapsedTime(&GPU_milliseconds, GPUstart, GPUstop);
+
+    /**************************/
+    /* Merging batches on GPU */
+    /**************************/
+
+    float CPUstart = time(NULL);
+
+    std::vector< std::pair<uint64_t*, uint64_t*> > batches;
+    for (int i = 0; i < number_of_batches; i++)
+    {
+        batches.push_back(std::make_pair(h_key_array+i*batch_size, h_key_array+(i+1)*batch_size));
+    }
+    
+    omp_set_dynamic(false);
+    omp_set_num_threads(nthreads);
+
+    //printf("Real number of threads: %d\n", omp_get_num_threads());
+    __gnu_parallel::multiway_merge(batches.begin(), batches.end(), sorted_array, number_of_elements, std::less<uint64_t>());
+
+    //double end = omp_get_wtime();
+    float CPUend = time(NULL);
+
+
+    printf("Elapsed time: %f s.\n", (GPU_milliseconds/1000)+CPUend-CPUstart);
+
+    //std::sort(h_key_ref.begin(), h_key_ref.end());
+    //bool result = compareAB(h_key_array, h_key_ref);
+    //printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");
+
+    return 0;
+}
+
+
