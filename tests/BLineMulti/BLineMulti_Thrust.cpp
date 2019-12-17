@@ -3,20 +3,23 @@
 #include <parallel/algorithm>
 #include <omp.h>
 #include "BLineMulti_Thrust.h"
+#include <sys/time.h>
 
 uint64_t number_of_elements = 2048L*1024*1024;
 uint64_t batch_size = 512L*1024*1024;
-int nthreads = 28;
+int nthreads = 8;
 
 int main(void)
 {
     int number_of_batches = number_of_elements / batch_size;
     uint64_t *h_key_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
     uint64_t *sorted_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
-    
+    uint64_t *d_key_array;
+
     for (uint64_t i = 0; i < number_of_elements; i++) {
         h_key_array[i] = ((uint64_t)rand()) << 32 | (uint64_t)rand();
     }
+    
     printf("size : %lu\n", sizeof(uint64_t));
 
     /**************************/
@@ -30,7 +33,7 @@ int main(void)
 
     cudaEventRecord(GPUstart, 0);
 
-    BLineMultiSort(h_key_array, number_of_elements, batch_size);
+    BLineMultiSort(h_key_array, d_key_array, number_of_elements, batch_size);
 
     cudaEventRecord(GPUstop, 0);
     cudaEventSynchronize(GPUstop);
@@ -40,12 +43,12 @@ int main(void)
     /* Merging batches on GPU */
     /**************************/
 
-    float CPUstart = time(NULL);
-
+    struct timeval CPUstart;
+    gettimeofday(&CPUstart, NULL);
     std::vector< std::pair<uint64_t*, uint64_t*> > batches;
     for (int i = 0; i < number_of_batches; i++)
     {
-        batches.push_back(std::make_pair(h_key_array+i*batch_size, h_key_array+(i+1)*batch_size));
+        batches.push_back(std::make_pair(&h_key_array[i*batch_size], &h_key_array[(i+1)*batch_size]));
     }
     
     omp_set_dynamic(false);
@@ -55,13 +58,14 @@ int main(void)
     __gnu_parallel::multiway_merge(batches.begin(), batches.end(), sorted_array, number_of_elements, std::less<uint64_t>());
 
     //double end = omp_get_wtime();
-    float CPUend = time(NULL);
+    struct timeval CPUend;
+    gettimeofday(&CPUend, NULL);
 
-
-    printf("Elapsed time: %f s.\n", (GPU_milliseconds/1000)+CPUend-CPUstart);
+    printf("Elapsed time on GPU: %f s.\n", (GPU_milliseconds/1000));
+    printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
 
     //std::sort(h_key_ref.begin(), h_key_ref.end());
-    //bool result = compareAB(h_key_array, h_key_ref);
+    //bool result = (sorted_v == h_key_ref);
     //printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");
 
     return 0;

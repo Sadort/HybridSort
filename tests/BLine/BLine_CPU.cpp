@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <iostream>
 #include <omp.h>
+#include <sys/time.h>
 
-#define nthreads 28
+#define nthreads 8
 
 int main()
 {
@@ -16,7 +17,8 @@ int main()
     }
 
     //double start = omp_get_wtime();
-    double start = time(NULL);
+    struct timeval CPUstart;
+    gettimeofday(&CPUstart, NULL);
     
     omp_set_dynamic(false);
     omp_set_num_threads(nthreads);
@@ -27,8 +29,9 @@ int main()
     //std::sort(h_key_array.begin(), h_key_array.end(), __gnu_parallel::parallel_tag());
 
     //double end = omp_get_wtime();
-    double end = time(NULL);
-    printf("%d threads, elapsed time is %f s.\n", nthreads, end-start);
+    struct timeval CPUend;
+    gettimeofday(&CPUend, NULL);
+    printf("%d threads. Elapsed time on CPU: %f s.\n", nthreads, ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
    
     return 0;
 }
