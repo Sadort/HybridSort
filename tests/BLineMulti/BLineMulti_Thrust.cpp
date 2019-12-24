@@ -4,6 +4,7 @@
 #include <omp.h>
 #include "BLineMulti_Thrust.h"
 #include <sys/time.h>
+#include <nvToolsExt.h>
 
 uint64_t number_of_elements = 2048L*1024*1024;
 uint64_t batch_size = 512L*1024*1024;
@@ -53,10 +54,12 @@ int main(void)
     
     omp_set_dynamic(false);
     omp_set_num_threads(nthreads);
+    nvtxRangeId_t id0 = nvtxRangeStart("Multiway-merge");
 
     //printf("Real number of threads: %d\n", omp_get_num_threads());
     __gnu_parallel::multiway_merge(batches.begin(), batches.end(), sorted_array, number_of_elements, std::less<uint64_t>());
 
+    nvtxRangeEnd(id0);
     //double end = omp_get_wtime();
     struct timeval CPUend;
     gettimeofday(&CPUend, NULL);
