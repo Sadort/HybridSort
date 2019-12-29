@@ -27,44 +27,42 @@ void PipeDataSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numb
         th_key_array[s] = thrust::device_pointer_cast(d_key_array[s]);
     }
     
-    //int start_index = 0;
     for (int i = 0; i < number_of_batches / 2; i++) {
+        //Staged HtoD
         for (int s = 0; s < nstreams; s++) {
-            //start_index = 2*i*batch_size+s*batch_size;
-            //Staged HtoD
+
             for (int b = 0; b < number_of_buffers; b++) {
                 cudaMemcpyAsync(pinned_M[s], 
-				&h_key_array[start_index+b*(pinned_M_size/2)], 
-				(pinned_M_size/2)*sizeof(uint64_t), 
-				cudaMemcpyHostToHost, 
-				streams[s]);
-                //cudaStreamSynchronize(streams[s]);
+                &h_key_array[start_index+b*(pinned_M_size/2)],
+                (pinned_M_size/2)*sizeof(uint64_t),
+                cudaMemcpyHostToHost,
+                streams[s]);
                 cudaMemcpyAsync(&d_key_array[s][b*(pinned_M_size/2)], 
-				pinned_M[s], 
-				(pinned_M_size/2)*sizeof(uint64_t), 
-				cudaMemcpyHostToDevice, 
-				streams[s]);
-                //cudaStreamSynchronize(streams[s]);
+                pinned_M[s],
+                (pinned_M_size/2)*sizeof(uint64_t),
+                cudaMemcpyHostToDevice,
+                streams[s]);
             }
-            
-            //Sort on GPU
-	    thrust::sort(thrust::cuda::par.on(streams[s]), th_key_array[s], th_key_array[s]+batch_size);
+        }
+        //Sort on GPU
+        for (int s = 0; s < nstreams; s++) {
+            thrust::sort(thrust::cuda::par.on(streams[s]), th_key_array[s], th_key_array[s]+batch_size);
             //cudaStreamSynchronize(streams[s]);
+        }
             
-            //Staged DtoH
+        //Staged DtoH
+        for (int s = 0; s < nstreams; s++) {
             for (int b = 0; b < number_of_buffers; b++) {
                 cudaMemcpyAsync(pinned_M[s], 
-				&d_key_array[s][b*(pinned_M_size/2)], 
-				(pinned_M_size/2)*sizeof(uint64_t), 
-				cudaMemcpyDeviceToHost, 
-				streams[s]);
-                //cudaStreamSynchronize(streams[s]);
+                &d_key_array[s][b*(pinned_M_size/2)],
+                (pinned_M_size/2)*sizeof(uint64_t),
+                cudaMemcpyDeviceToHost,
+                streams[s]);
                 cudaMemcpyAsync(&h_key_array[start_index+b*(pinned_M_size/2)], 
-				pinned_M[s], 
-				(pinned_M_size/2)*sizeof(uint64_t), 
-				cudaMemcpyHostToHost, 
-				streams[s]);
-                //cudaStreamSynchronize(streams[s]);
+                pinned_M[s],
+                (pinned_M_size/2)*sizeof(uint64_t),
+                cudaMemcpyHostToHost,
+                streams[s]);
             }
         }
     }
