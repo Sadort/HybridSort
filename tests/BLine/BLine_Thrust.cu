@@ -12,7 +12,7 @@ using namespace std;
 
 int main(void)
 {
-    uint64_t number_of_elements = 512L*1024*1024;
+    uint64_t number_of_elements = 350L*1024*1024;
     uint64_t *h_key_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
     uint64_t *d_key_array;
 

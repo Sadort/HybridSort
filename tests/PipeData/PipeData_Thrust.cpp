@@ -2,20 +2,22 @@
 #include <algorithm>
 #include <parallel/algorithm>
 #include <omp.h>
-#include "BLineMulti_Thrust.h"
+#include "PipeData_Thrust.h"
 #include <sys/time.h>
 #include <nvToolsExt.h>
 
 uint64_t number_of_elements = 1400L*1024*1024;
 uint64_t batch_size = 350L*1024*1024;
+uint64_t pinned_M_size = 1024L*1024;
 int nthreads = 8;
+int nstreams = 2;
 
 int main(void)
 {
     int number_of_batches = number_of_elements / batch_size;
     uint64_t *h_key_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
     uint64_t *sorted_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
-    uint64_t *d_key_array;
+    uint64_t *d_key_array[2];
 
     for (uint64_t i = 0; i < number_of_elements; i++) {
         h_key_array[i] = ((uint64_t)rand()) << 32 | (uint64_t)rand();
@@ -34,7 +36,7 @@ int main(void)
 
     cudaEventRecord(GPUstart, 0);
 
-    BLineMultiSort(h_key_array, d_key_array, number_of_elements, batch_size);
+    PipeDataSort(h_key_array, d_key_array, number_of_elements, batch_size, pinned_M_size, nstreams);
 
     cudaEventRecord(GPUstop, 0);
     cudaEventSynchronize(GPUstop);
