@@ -45,8 +45,6 @@ void PipeDataSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numb
                                     streams[0]);
                     cudaStreamSynchronize(streams[0]);
                 }
-                thrust::sort(thrust::cuda::par.on(streams[0]), th_key_array[0], th_key_array[0]+batch_size);
-                cudaStreamSynchronize(streams[0]);
             }
             if (s == 0) {
                 thrust::sort(thrust::cuda::par.on(streams[0]), th_key_array[0], th_key_array[0]+batch_size);
