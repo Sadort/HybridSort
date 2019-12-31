@@ -5,6 +5,7 @@
 
 #define start_index_s0 2*i*batch_size
 #define start_index_s1 2*i*batch_size+batch_size
+#define start_index_s2 2*i*batch_size-batch_size
 
 void PipeDataSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nstreams = 2)
 {
@@ -61,7 +62,7 @@ void PipeDataSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numb
                                     streams[1]);
                     cudaStreamSynchronize(streams[1]);
                     
-                    std::memcpy(&h_key_array[start_index_s1+b*(pinned_M_size/2)],
+                    std::memcpy(&h_key_array[start_index_s2+b*(pinned_M_size/2)],
                                 pinned_M[1],
                                 (pinned_M_size/2)*sizeof(uint64_t));
                     
