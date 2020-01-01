@@ -81,7 +81,7 @@ void PipeDataSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numb
                 }
             }
             cudaDeviceSynchronize();
-            if (i != (number_of_batches / 2) - 1) {
+            if (s == 1 && i != (number_of_batches / 2) - 1) {
                 for (int b = 0; b < number_of_buffers; b++) {
                     std::memcpy(pinned_M[0],
                                 &h_key_array[start_index_s2+b*(pinned_M_size/2)],
@@ -104,7 +104,7 @@ void PipeDataSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numb
                     cudaStreamSynchronize(streams[0]);
                 }
             }
-            else {
+            else if (s == 1 && i == (number_of_batches / 2) - 1) {
                 for (int b = 0; b < number_of_buffers; b++) {
                     cudaMemcpyAsync(pinned_M[1],
                                     &d_key_array[1][b*(pinned_M_size/2)],
