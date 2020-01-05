@@ -1,10 +1,12 @@
-#include <iostream> 
+#include <iostream>
+#include <cuda_runtime.h>
 #include <algorithm>
 #include <parallel/algorithm>
 #include <omp.h>
-#include "BLineMulti_Thrust.h"
 #include <sys/time.h>
 #include <nvToolsExt.h>
+
+void BLineMultiSort(uint64_t *h_key_array, uint64_t *d_key_array, uint64_t number_of_elements, uint64_t batch_size);
 
 uint64_t number_of_elements = 1400L*1024*1024;
 uint64_t batch_size = 350L*1024*1024;
