@@ -56,7 +56,7 @@ int main(void)
         if (i == (number_of_batches / 2) - 1) {
             batches.push_back(std::make_pair(&h_key_array[2*i*batch_size], &h_key_array[2*i*batch_size+batch_size]));
             batches.push_back(std::make_pair(&h_key_array[2*i*batch_size+batch_size], &h_key_array[number_of_elements]));
-            
+            ./
             break;
         }
         batches.push_back(std::make_pair(&h_key_array[2*i*batch_size], &h_key_array[2*(i+1)*batch_size]));
