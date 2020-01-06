@@ -8,7 +8,7 @@
 
 uint64_t number_of_elements = 1400L*1024*1024;
 uint64_t batch_size = 350L*1024*1024;
-uint64_t pinned_M_size = 1024L*1024;
+uint64_t pinned_M_size = 2L*1024*1024;
 int nthreads = 8;
 int nstreams = 2;
 

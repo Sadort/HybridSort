@@ -1,9 +1,11 @@
+#include <cstring>
 #include <iostream>
 #include <algorithm>
 #include <parallel/algorithm>
 #include <omp.h>
 #include <cuda_runtime.h>
 #include <nvToolsExt.h>
+#include <sys/time.h>
 
 void PairMerge(uint64_t *key_array_1, uint64_t *key_array_2, uint64_t batch_size, int nthreads)
 {
@@ -11,15 +13,16 @@ void PairMerge(uint64_t *key_array_1, uint64_t *key_array_2, uint64_t batch_size
     omp_set_num_threads(nthreads);
     nvtxRangeId_t id1 = nvtxRangeStart("Pairwise-merge");
     
-    std::vector<uint64_t> v1(key_array_1, key_array_1+batch_size);
-    std::vector<uint64_t> v2(key_array_2, key_array_2+batch_size);
-    std::vector<uint64_t> output_v(2*batch_size);
+    std::vector< std::pair<uint64_t*, uint64_t*> > batches;
+    batches.push_back(std::make_pair(&key_array_1[0], &key_array_1[batch_size]));
+    batches.push_back(std::make_pair(&key_array_2[0], &key_array_2[batch_size]));
+    uint64_t *output_v = (uint64_t *)malloc(2*batch_size*sizeof(uint64_t));
     
-    __gnu_parallel::merge(v1.begin(), v1.end(), v2.begin(), v2.end(), output_v.begin(), std::less<uint64_t>());
-    
-    std::copy(output_v.begin(), output_v.begin()+batch_size, key_array_1);
-    std::copy(output_v.begin()+batch_size, output_v.end(), key_array_2);
-    
+    __gnu_parallel::multiway_merge(batches.begin(), batches.end(), output_v, 2*batch_size, std::less<uint64_t>());
+
+    std::memcpy(key_array_1, output_v, (batch_size)*sizeof(uint64_t));
+    std::memcpy(key_array_2, &output_v[batch_size], (batch_size)*sizeof(uint64_t));
+        
     nvtxRangeEnd(id1);
    
     return;
