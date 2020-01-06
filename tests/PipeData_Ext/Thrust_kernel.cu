@@ -11,7 +11,6 @@
 #include <thrust/device_ptr.h>
 #include <map>
 #include <cassert>
-#include "PipeData_Thrust.h"
 
 #define start_index_s0 2*i*batch_size
 #define start_index_s1 2*i*batch_size+batch_size

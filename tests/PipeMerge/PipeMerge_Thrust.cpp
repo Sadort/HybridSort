@@ -1,17 +1,17 @@
-#include <iostream> 
+#include <iostream>
 #include <algorithm>
 #include <parallel/algorithm>
 #include <omp.h>
-#include <sys/time.h>
 #include <cuda_runtime.h>
+#include <sys/time.h>
 #include <nvToolsExt.h>
-
-void PipeMergeSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nthreads);
 
 uint64_t number_of_elements = 1400L*1024*1024;
 uint64_t batch_size = 350L*1024*1024;
 uint64_t pinned_M_size = 1024L*1024;
 int nthreads = 8;
+
+void PipeMergeSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nthreads);
 
 int main(void)
 {
@@ -50,9 +50,16 @@ int main(void)
     struct timeval CPUstart;
     gettimeofday(&CPUstart, NULL);
     std::vector< std::pair<uint64_t*, uint64_t*> > batches;
-    for (int i = 0; i < number_of_batches; i++)
+    
+    for (int i = 0; i < number_of_batches / 2; i++)
     {
-        batches.push_back(std::make_pair(&h_key_array[i*batch_size], &h_key_array[(i+1)*batch_size]));
+        if (i == (number_of_batches / 2) - 1) {
+            batches.push_back(std::make_pair(&h_key_array[2*i*batch_size], &h_key_array[2*i*batch_size+batch_size]));
+            batches.push_back(std::make_pair(&h_key_array[2*i*batch_size+batch_size], &h_key_array[number_of_elements]));
+            
+            break;
+        }
+        batches.push_back(std::make_pair(&h_key_array[2*i*batch_size], &h_key_array[2*(i+1)*batch_size]));
     }
     
     omp_set_dynamic(false);
@@ -78,5 +85,3 @@ int main(void)
 
     return 0;
 }
-
-
