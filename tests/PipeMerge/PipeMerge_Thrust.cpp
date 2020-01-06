@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <nvToolsExt.h>
 
-uint64_t number_of_elements = 1400L*1024*1024;
+uint64_t number_of_elements = 2100L*1024*1024;
 uint64_t batch_size = 350L*1024*1024;
 uint64_t pinned_M_size = 2L*1024*1024;
 int nthreads = 8;
@@ -76,11 +76,11 @@ int main(void)
     printf("Elapsed time on GPU: %f s.\n", (GPU_milliseconds/1000));
     printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
 
-    std::vector<uint64_t> h_key_ref(h_key_array, h_key_array+number_of_elements);
-    std::sort(h_key_ref.begin(), h_key_ref.end());
-    std::vector<uint64_t> sorted_v(sorted_array, sorted_array+number_of_elements);
-    bool result = (sorted_v == h_key_ref);
-    printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");
+//    std::vector<uint64_t> h_key_ref(h_key_array, h_key_array+number_of_elements);
+//    std::sort(h_key_ref.begin(), h_key_ref.end());
+//    std::vector<uint64_t> sorted_v(sorted_array, sorted_array+number_of_elements);
+//    bool result = (sorted_v == h_key_ref);
+//    printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");
 
     return 0;
 }
