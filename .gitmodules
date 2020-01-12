@@ -1,3 +1,0 @@
-[submodule "ext/inplace-gpusort"]
-	path = ext/inplace-gpusort
-	url = https://github.com/bkarsin/inplace-gpusort.git
