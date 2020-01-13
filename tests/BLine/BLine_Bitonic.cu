@@ -8,7 +8,7 @@
 #include <vector>
 #include <cmath>
 #include <random>
-#include "bitonic_sort.h"
+#include "bitonic.hxx"
 
 using namespace std;
 
@@ -36,7 +36,7 @@ int main(void)
                 number_of_elements * sizeof(uint64_t),
                 cudaMemcpyHostToDevice );
 
-    BitonicSort<uint64_t, cmp>(d_key_array, number_of_elements, 256, 32);
+    bitonicSort<uint64_t, cmp>(d_key_array, number_of_elements, 256, 32);
 
     cudaMemcpy( h_key_array,
                 d_key_array,
