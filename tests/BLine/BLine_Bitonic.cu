@@ -50,6 +50,9 @@ int main(void)
 
     printf("Elapsed time: %f s.\n", milliseconds/1000);
 
+    std::vector<uint64_t> h_key_ref(h_key_array, h_key_array+number_of_elements);
+    printf("Test: %s\n", std::is_sorted(h_key_ref.begin(), h_key_ref.end()) == true ? "SUCCESS" : "FAIL");
+
     //std::sort(h_key_ref.begin(), h_key_ref.end());
     //bool result = compareAB(h_key_array, h_key_ref);
     //printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");

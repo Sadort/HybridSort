@@ -1,23 +1,25 @@
-#include <iostream>
-#include <cuda_runtime.h>
+#include <iostream> 
 #include <algorithm>
 #include <parallel/algorithm>
 #include <omp.h>
 #include <sys/time.h>
+#include <cuda_runtime.h>
 #include <nvToolsExt.h>
 
-void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array, uint64_t number_of_elements, uint64_t batch_size);
+void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nstreams);
 
-uint64_t number_of_elements = 2100L*1024*1024;
-uint64_t batch_size = 350L*1024*1024;
+uint64_t number_of_elements = 2048L*1024*1024;
+uint64_t batch_size = 512L*1024*1024;
+uint64_t pinned_M_size = 2L*1024*1024;
 int nthreads = 8;
+int nstreams = 2;
 
 int main(void)
 {
     int number_of_batches = number_of_elements / batch_size;
     uint64_t *h_key_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
     uint64_t *sorted_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
-    uint64_t *d_key_array;
+    uint64_t *d_key_array[2];
 
     for (uint64_t i = 0; i < number_of_elements; i++) {
         h_key_array[i] = ((uint64_t)rand()) << 32 | (uint64_t)rand();
@@ -36,7 +38,7 @@ int main(void)
 
     cudaEventRecord(GPUstart, 0);
 
-    ThrustSort(h_key_array, d_key_array, number_of_elements, batch_size);
+    BitonicSort(h_key_array, d_key_array, number_of_elements, batch_size, pinned_M_size, nstreams);
 
     cudaEventRecord(GPUstop, 0);
     cudaEventSynchronize(GPUstop);
@@ -71,9 +73,11 @@ int main(void)
 
     std::vector<uint64_t> h_key_ref(sorted_array, sorted_array+number_of_elements);
     printf("Test: %s\n", std::is_sorted(h_key_ref.begin(), h_key_ref.end()) == true ? "SUCCESS" : "FAIL");
-    //std::sort(h_key_ref.begin(), h_key_ref.end());
-    //bool result = (sorted_v == h_key_ref);
-    //printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");
+//    std::vector<uint64_t> h_key_ref(h_key_array, h_key_array+number_of_elements);
+//    std::sort(h_key_ref.begin(), h_key_ref.end());
+//    std::vector<uint64_t> sorted_v(sorted_array, sorted_array+number_of_elements);
+//    bool result = (sorted_v == h_key_ref);
+//    printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");
 
     return 0;
 }

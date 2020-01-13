@@ -6,7 +6,7 @@
 #include <cuda_runtime.h>
 #include <nvToolsExt.h>
 
-void PipeDataSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nstreams);
+void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nstreams);
 
 uint64_t number_of_elements = 2100L*1024*1024;
 uint64_t batch_size = 350L*1024*1024;
@@ -38,7 +38,7 @@ int main(void)
 
     cudaEventRecord(GPUstart, 0);
 
-    PipeDataSort(h_key_array, d_key_array, number_of_elements, batch_size, pinned_M_size, nstreams);
+    ThrustSort(h_key_array, d_key_array, number_of_elements, batch_size, pinned_M_size, nstreams);
 
     cudaEventRecord(GPUstop, 0);
     cudaEventSynchronize(GPUstop);

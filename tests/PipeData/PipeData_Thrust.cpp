@@ -12,7 +12,7 @@ uint64_t pinned_M_size = 2L*1024*1024;
 int nthreads = 8;
 int nstreams = 2;
 
-void PipeDataSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nstreams);
+void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nstreams);
 
 int main(void)
 {
@@ -38,7 +38,7 @@ int main(void)
 
     cudaEventRecord(GPUstart, 0);
 
-    PipeDataSort(h_key_array, d_key_array, number_of_elements, batch_size, pinned_M_size, nstreams);
+    ThrustSort(h_key_array, d_key_array, number_of_elements, batch_size, pinned_M_size, nstreams);
 
     cudaEventRecord(GPUstop, 0);
     cudaEventSynchronize(GPUstop);

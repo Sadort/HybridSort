@@ -6,10 +6,10 @@
 #include <sys/time.h>
 #include <nvToolsExt.h>
 
-void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array, uint64_t number_of_elements, uint64_t batch_size);
+void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array, uint64_t number_of_elements, uint64_t batch_size);
 
-uint64_t number_of_elements = 2100L*1024*1024;
-uint64_t batch_size = 350L*1024*1024;
+uint64_t number_of_elements = 2048L*1024*1024;
+uint64_t batch_size = 1024L*1024*1024;
 int nthreads = 8;
 
 int main(void)
@@ -36,7 +36,7 @@ int main(void)
 
     cudaEventRecord(GPUstart, 0);
 
-    ThrustSort(h_key_array, d_key_array, number_of_elements, batch_size);
+    BitonicSort(h_key_array, d_key_array, number_of_elements, batch_size);
 
     cudaEventRecord(GPUstop, 0);
     cudaEventSynchronize(GPUstop);
