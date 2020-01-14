@@ -1,18 +1,17 @@
-#include <iostream> 
+#include <iostream>
 #include <algorithm>
 #include <parallel/algorithm>
 #include <omp.h>
-#include <sys/time.h>
 #include <cuda_runtime.h>
+#include <sys/time.h>
 #include <nvToolsExt.h>
 
-void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nstreams);
-
-uint64_t number_of_elements = 2048L*1024*1024;
-uint64_t batch_size = 512L*1024*1024;
-uint64_t pinned_M_size = 2L*1024*1024;
+uint64_t number_of_elements = 2100L*1024*1024;
+uint64_t batch_size = 350L*1024*1024;
 int nthreads = 8;
 int nstreams = 2;
+
+void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, int nthreads);
 
 int main(void)
 {
@@ -38,7 +37,7 @@ int main(void)
 
     cudaEventRecord(GPUstart, 0);
 
-    BitonicSort(h_key_array, d_key_array, number_of_elements, batch_size, pinned_M_size, nstreams);
+    ThrustSort(h_key_array, d_key_array, number_of_elements, batch_size, nthreads);
 
     cudaEventRecord(GPUstop, 0);
     cudaEventSynchronize(GPUstop);
@@ -51,9 +50,15 @@ int main(void)
     struct timeval CPUstart;
     gettimeofday(&CPUstart, NULL);
     std::vector< std::pair<uint64_t*, uint64_t*> > batches;
-    for (int i = 0; i < number_of_batches; i++)
+    
+    for (int i = 0; i < number_of_batches / 2; i++)
     {
-        batches.push_back(std::make_pair(&h_key_array[i*batch_size], &h_key_array[(i+1)*batch_size]));
+        if (i == (number_of_batches / 2) - 1) {
+            batches.push_back(std::make_pair(&h_key_array[2*i*batch_size], &h_key_array[2*i*batch_size+batch_size]));
+            batches.push_back(std::make_pair(&h_key_array[2*i*batch_size+batch_size], &h_key_array[number_of_elements]));
+            break;
+        }
+        batches.push_back(std::make_pair(&h_key_array[2*i*batch_size], &h_key_array[2*(i+1)*batch_size]));
     }
     
     omp_set_dynamic(false);
@@ -71,8 +76,8 @@ int main(void)
     printf("Elapsed time on GPU: %f s.\n", (GPU_milliseconds/1000));
     printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
 
-    //std::vector<uint64_t> h_key_ref(sorted_array, sorted_array+number_of_elements);
-    //printf("Test: %s\n", std::is_sorted(h_key_ref.begin(), h_key_ref.end()) == true ? "SUCCESS" : "FAIL");
+    printf("Test: %s\n", std::is_sorted(sorted_array, sorted_array+number_of_elements) == true ? "SUCCESS" : "FAIL");
+
 //    std::vector<uint64_t> h_key_ref(h_key_array, h_key_array+number_of_elements);
 //    std::sort(h_key_ref.begin(), h_key_ref.end());
 //    std::vector<uint64_t> sorted_v(sorted_array, sorted_array+number_of_elements);
@@ -81,5 +86,3 @@ int main(void)
 
     return 0;
 }
-
-
