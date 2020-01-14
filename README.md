@@ -1,6 +1,6 @@
 # A Hybrid CPU/GPU Approach for Optimizing Sorting Throughput
 
-- Implementation of a hybrid CPU/GPU sort as described in [paper by Gowanlock and Karsin](http://jan.ucc.nau.edu/mg2745/publications/Gowanlock_DaMoN2019.pdf)
+- Implementation of a hybrid CPU/GPU sort as described in [paper by Gowanlock and Karsin](http://jan.ucc.nau.edu/mg2745/publications/Gowanlock_Karsin_ParCo2019.pdf)
 
 ## Unified Memory
 CUDA programs in tests/UnifiedMemory are for Unified Memory [[1]](https://devblogs.nvidia.com/unified-memory-cuda-beginners/)[[2]](https://devblogs.nvidia.com/beyond-gpu-memory-limits-unified-memory-pascal/) testing only. Programs are compiled by CUDA 10.0 and run in NVidia Tesla P100 (PCIe-Based 12GB Graphics 1189MHz Memory 715MHz).
