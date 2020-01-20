@@ -37,12 +37,13 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
             }
 	    if (s == 0)
 	    {
-		bitonicSort<uint64_t, cmp>(d_key_array[0], batch_size, 256, 32, streams[0]);
+		//bitonicSort<uint64_t, cmp>(d_key_array[0], batch_size, 256, 32, streams[0]);
 		cudaMemcpyAsync(d_key_array[1],
                                 &h_key_array[start_index_s1],
                                 batch_size*sizeof(uint64_t),
                                 cudaMemcpyHostToDevice,
                                 streams[1]);
+		bitonicSort<uint64_t, cmp>(d_key_array[0], batch_size, 256, 32, streams[0]);
 		if (i > 0)
 		{
 		    PairMerge(&h_key_array[merge_index_1], &h_key_array[merge_index_2], batch_size, nthreads);
@@ -52,13 +53,13 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
 	    }
 	    else if (s == 1)
 	    {
-		bitonicSort<uint64_t, cmp>(d_key_array[1], batch_size, 256, 32, streams[1]);
+		//bitonicSort<uint64_t, cmp>(d_key_array[1], batch_size, 256, 32, streams[1]);
 		cudaMemcpyAsync(&h_key_array[start_index_s0],
 				d_key_array[0],
                                 batch_size*sizeof(uint64_t),
                                 cudaMemcpyDeviceToHost,
                                 streams[0]);
-	        //bitonicSort<uint64_t, cmp>(d_key_array[1], batch_size, 256, 32, streams[1]);
+	        bitonicSort<uint64_t, cmp>(d_key_array[1], batch_size, 256, 32, streams[1]);
 		cudaDeviceSynchronize();
 	    }
             if (s == 1 && i != (number_of_batches / 2) - 1) {
