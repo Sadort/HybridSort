@@ -75,13 +75,13 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
                             &h_key_array[start_index_s1],
                             batch_size*sizeof(uint64_t));
                 
-                cudaMemcpyAsync(&pinned_M[0],
+                cudaMemcpyAsync(pinned_M[0],
                                 d_key_array[0],
                                 batch_size*sizeof(uint64_t),
                                 cudaMemcpyDeviceToHost,
                                 streams[0]);
                 cudaMemcpyAsync(d_key_array[1],
-                                &pinned_M[1],
+                                pinned_M[1],
                                 batch_size*sizeof(uint64_t),
                                 cudaMemcpyHostToDevice,
                                 streams[1]);

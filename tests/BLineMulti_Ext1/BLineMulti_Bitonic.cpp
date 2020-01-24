@@ -70,8 +70,8 @@ int main(void)
     printf("Elapsed time on GPU: %f s.\n", (GPU_milliseconds/1000));
     printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
 
-    std::vector<uint64_t> h_key_ref(sorted_array, sorted_array+number_of_elements);
-    printf("Test: %s\n", std::is_sorted(h_key_ref.begin(), h_key_ref.end()) == true ? "SUCCESS" : "FAIL");
+//    std::vector<uint64_t> h_key_ref(sorted_array, sorted_array+number_of_elements);
+//    printf("Test: %s\n", std::is_sorted(h_key_ref.begin(), h_key_ref.end()) == true ? "SUCCESS" : "FAIL");
 //    std::vector<uint64_t> h_key_ref(h_key_array, h_key_array+number_of_elements);
 //    std::sort(h_key_ref.begin(), h_key_ref.end());
 //    std::vector<uint64_t> sorted_v(sorted_array, sorted_array+number_of_elements);
