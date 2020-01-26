@@ -55,26 +55,26 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
             else if (i > 0 && s == 0) {
                 //Overlapping
                 for (int b = 0; b < number_of_buffers; b++) {
-                    std::memcpy(pinned_M[0],
-                                &h_key_array[start_index_s0+b*(pinned_M_size/2)],
-                                (pinned_M_size/2)*sizeof(uint64_t));
-                    
                     cudaMemcpyAsync(pinned_M[1],
                                     &d_key_array[1][b*(pinned_M_size/2)],
                                     (pinned_M_size/2)*sizeof(uint64_t),
                                     cudaMemcpyDeviceToHost,
                                     streams[1]);
-                    cudaStreamSynchronize(streams[1]);
                     
-                    std::memcpy(&h_key_array[start_index_s2+b*(pinned_M_size/2)],
-                                pinned_M[1],
+                    std::memcpy(pinned_M[0],
+                                &h_key_array[start_index_s0+b*(pinned_M_size/2)],
                                 (pinned_M_size/2)*sizeof(uint64_t));
+                    cudaStreamSynchronize(streams[1]);
                     
                     cudaMemcpyAsync(&d_key_array[0][b*(pinned_M_size/2)],
                                     pinned_M[0],
                                     (pinned_M_size/2)*sizeof(uint64_t),
                                     cudaMemcpyHostToDevice,
                                     streams[0]);
+                    
+                    std::memcpy(&h_key_array[start_index_s2+b*(pinned_M_size/2)],
+                                pinned_M[1],
+                                (pinned_M_size/2)*sizeof(uint64_t));
                     cudaStreamSynchronize(streams[0]);
                 }
                 thrust::sort(thrust::cuda::par.on(streams[0]), th_key_array[0], th_key_array[0]+batch_size);
@@ -83,26 +83,26 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
             else if (s == 1) {
                 //Overlapping
                 for (int b = 0; b < number_of_buffers; b++) {
-                    std::memcpy(pinned_M[1],
-                                &h_key_array[start_index_s1+b*(pinned_M_size/2)],
-                                (pinned_M_size/2)*sizeof(uint64_t));
-                    
                     cudaMemcpyAsync(pinned_M[0],
                                     &d_key_array[0][b*(pinned_M_size/2)],
                                     (pinned_M_size/2)*sizeof(uint64_t),
                                     cudaMemcpyDeviceToHost,
                                     streams[0]);
-                    cudaStreamSynchronize(streams[0]);
                     
-                    std::memcpy(&h_key_array[start_index_s0+b*(pinned_M_size/2)],
-                                pinned_M[0],
+                    std::memcpy(pinned_M[1],
+                                &h_key_array[start_index_s1+b*(pinned_M_size/2)],
                                 (pinned_M_size/2)*sizeof(uint64_t));
+                    cudaStreamSynchronize(streams[0]);
                     
                     cudaMemcpyAsync(&d_key_array[1][b*(pinned_M_size/2)],
                                     pinned_M[1],
                                     (pinned_M_size/2)*sizeof(uint64_t),
                                     cudaMemcpyHostToDevice,
                                     streams[1]);
+                    
+                    std::memcpy(&h_key_array[start_index_s0+b*(pinned_M_size/2)],
+                                pinned_M[0],
+                                (pinned_M_size/2)*sizeof(uint64_t));
                     cudaStreamSynchronize(streams[1]);
                 }
                 thrust::sort(thrust::cuda::par.on(streams[1]), th_key_array[1], th_key_array[1]+batch_size);
