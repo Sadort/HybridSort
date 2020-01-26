@@ -6,10 +6,10 @@
 #include <sys/time.h>
 #include <nvToolsExt.h>
 
-uint64_t number_of_elements = 2100L*1024*1024;
-uint64_t batch_size = 350L*1024*1024;
+uint64_t number_of_elements = 2048L*1024*1024;
+uint64_t batch_size = 256L*1024*1024;
 uint64_t pinned_M_size = 2L*1024*1024;
-int nthreads = 8;
+int nthreads = 20;
 
 void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nthreads);
 

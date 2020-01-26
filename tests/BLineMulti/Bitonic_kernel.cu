@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <cuda_runtime.h>
 #include <algorithm>
+#include <cstring>
 #include "bitonic.hxx"
 
 void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array, uint64_t number_of_elements, uint64_t batch_size)

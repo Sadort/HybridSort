@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <cuda_runtime.h>
 #include <algorithm>
+#include <cstring>
 #include "bitonic.hxx"
 
 #define start_index_s0 2*i*batch_size

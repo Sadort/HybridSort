@@ -3,6 +3,7 @@
 #include <cuda_runtime.h>
 #include <map>
 #include <cassert>
+#include <cstring>
 #include "bitonic.hxx"
 
 #define start_index_s0 2*i*batch_size
