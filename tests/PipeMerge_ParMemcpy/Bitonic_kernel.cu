@@ -13,11 +13,14 @@
 #define merge_index_2 2*(i-1)*batch_size+batch_size
 
 void PairMerge(uint64_t *key_array_1, uint64_t *key_array_2, uint64_t batch_size, int nthreads);
+void ParMemcpy(uint64_t *dest, uint64_t *src, int number_of_elements, int nthreads);
 
 void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nthreads)
 {
     int number_of_batches = number_of_elements / batch_size;
     int number_of_buffers = 2 * batch_size / pinned_M_size;
+    int mem_threads = (int)log2((float)nthreads);
+    mem_threads = (int)exp2((float)mem_threads);
     
     uint64_t *pinned_M[2];
 
@@ -35,9 +38,12 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
         for (int s = 0; s < 2; s++) {
             if (i == 0 && s == 0) {
                 for (int b = 0; b < number_of_buffers; b++) {
-                    std::memcpy(pinned_M[0],
-                                &h_key_array[start_index_s0+b*(pinned_M_size/2)],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(pinned_M[0],
+                    //            &h_key_array[start_index_s0+b*(pinned_M_size/2)],
+                    //            (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(pinned_M[0], &h_key_array[start_index_s0+b*(pinned_M_size/2)], pinned_M_size/2, mem_threads);
+                    
                     cudaStreamSynchronize(streams[0]);
                     
                     cudaMemcpyAsync(&d_key_array[0][b*(pinned_M_size/2)],
@@ -47,16 +53,17 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
                                     streams[0]);
                     cudaStreamSynchronize(streams[0]);
                 }
-                //thrust::sort(thrust::cuda::par(alloc).on(streams[0]), th_key_array[0], th_key_array[0]+batch_size);
                 bitonicSort<uint64_t, cmp>(d_key_array[0], batch_size, 256, 32, streams[0]);
-		cudaStreamSynchronize(streams[0]);
+                cudaStreamSynchronize(streams[0]);
             }
             else if (i > 0 && s == 0) {
                 //Overlapping
                 for (int b = 0; b < number_of_buffers; b++) {
-                    std::memcpy(pinned_M[0],
-                                &h_key_array[start_index_s0+b*(pinned_M_size/2)],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(pinned_M[0],
+                    //            &h_key_array[start_index_s0+b*(pinned_M_size/2)],
+                    //            (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(pinned_M[0], &h_key_array[start_index_s0+b*(pinned_M_size/2)], pinned_M_size/2, mem_threads);
                     
                     cudaMemcpyAsync(pinned_M[1],
                                     &d_key_array[1][b*(pinned_M_size/2)],
@@ -65,9 +72,11 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
                                     streams[1]);
                     cudaStreamSynchronize(streams[1]);
                     
-                    std::memcpy(&h_key_array[start_index_s2+b*(pinned_M_size/2)],
-                                pinned_M[1],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(&h_key_array[start_index_s2+b*(pinned_M_size/2)],
+                        //        pinned_M[1],
+                        //        (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(&h_key_array[start_index_s2+b*(pinned_M_size/2)], pinned_M[1], pinned_M_size/2, mem_threads);
                     
                     cudaMemcpyAsync(&d_key_array[0][b*(pinned_M_size/2)],
                                     pinned_M[0],
@@ -76,17 +85,18 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
                                     streams[0]);
                     cudaStreamSynchronize(streams[0]);
                 }
-                //thrust::sort(thrust::cuda::par(alloc).on(streams[0]), th_key_array[0], th_key_array[0]+batch_size);
                 bitonicSort<uint64_t, cmp>(d_key_array[0], batch_size, 256, 32, streams[0]);
-		PairMerge(&h_key_array[merge_index_1], &h_key_array[merge_index_2], batch_size, nthreads);
+                PairMerge(&h_key_array[merge_index_1], &h_key_array[merge_index_2], batch_size, nthreads);
                 cudaStreamSynchronize(streams[0]);
             }
             else if (s == 1) {
                 //Overlapping
                 for (int b = 0; b < number_of_buffers; b++) {
-                    std::memcpy(pinned_M[1],
-                                &h_key_array[start_index_s1+b*(pinned_M_size/2)],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(pinned_M[1],
+                    //            &h_key_array[start_index_s1+b*(pinned_M_size/2)],
+                    //            (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(pinned_M[1], &h_key_array[start_index_s1+b*(pinned_M_size/2)], pinned_M_size/2, mem_threads);
                     
                     cudaMemcpyAsync(pinned_M[0],
                                     &d_key_array[0][b*(pinned_M_size/2)],
@@ -95,9 +105,11 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
                                     streams[0]);
                     cudaStreamSynchronize(streams[0]);
                     
-                    std::memcpy(&h_key_array[start_index_s0+b*(pinned_M_size/2)],
-                                pinned_M[0],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(&h_key_array[start_index_s0+b*(pinned_M_size/2)],
+                        //        pinned_M[0],
+                        //        (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(&h_key_array[start_index_s0+b*(pinned_M_size/2)], pinned_M[0], pinned_M_size/2, mem_threads);
                     
                     cudaMemcpyAsync(&d_key_array[1][b*(pinned_M_size/2)],
                                     pinned_M[1],
@@ -106,9 +118,8 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
                                     streams[1]);
                     cudaStreamSynchronize(streams[1]);
                 }
-                //thrust::sort(thrust::cuda::par(alloc).on(streams[1]), th_key_array[1], th_key_array[1]+batch_size);
                 bitonicSort<uint64_t, cmp>(d_key_array[1], batch_size, 256, 32, streams[1]);
-		cudaStreamSynchronize(streams[1]);
+                cudaStreamSynchronize(streams[1]);
                 
                 if (i == (number_of_batches / 2) - 1) {
                     for (int b = 0; b < number_of_buffers; b++) {
@@ -119,9 +130,12 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
                                         streams[1]);
                         cudaStreamSynchronize(streams[1]);
                         
-                        std::memcpy(&h_key_array[start_index_s1+b*(pinned_M_size/2)],
-                                    pinned_M[1],
-                                    (pinned_M_size/2)*sizeof(uint64_t));
+                        //std::memcpy(&h_key_array[start_index_s1+b*(pinned_M_size/2)],
+                            //        pinned_M[1],
+                            //        (pinned_M_size/2)*sizeof(uint64_t));
+                        
+                        ParMemcpy(&h_key_array[start_index_s1+b*(pinned_M_size/2)], pinned_M[1], pinned_M_size/2, mem_threads);
+                        
                         cudaStreamSynchronize(streams[1]);
                     }
                 }

@@ -20,6 +20,7 @@
 #define merge_index_2 2*(i-1)*batch_size+batch_size
 
 void PairMerge(uint64_t *key_array_1, uint64_t *key_array_2, uint64_t batch_size, int nthreads);
+void ParMemcpy(uint64_t *dest, uint64_t *src, int number_of_elements, int nthreads);
 
 // cached_allocator: a simple allocator for caching allocation requests
 class cached_allocator
@@ -124,6 +125,8 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
     cached_allocator alloc;
     int number_of_batches = number_of_elements / batch_size;
     int number_of_buffers = 2 * batch_size / pinned_M_size;
+    int mem_threads = (int)log2((float)nthreads);
+    mem_threads = (int)exp2((float)mem_threads);
     
     uint64_t *pinned_M[2];
 
@@ -146,9 +149,12 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
         for (int s = 0; s < 2; s++) {
             if (i == 0 && s == 0) {
                 for (int b = 0; b < number_of_buffers; b++) {
-                    std::memcpy(pinned_M[0],
-                                &h_key_array[start_index_s0+b*(pinned_M_size/2)],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(pinned_M[0],
+                    //            &h_key_array[start_index_s0+b*(pinned_M_size/2)],
+                    //            (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(pinned_M[0], &h_key_array[start_index_s0+b*(pinned_M_size/2)], pinned_M_size/2, mem_threads);
+                    
                     cudaStreamSynchronize(streams[0]);
                     
                     cudaMemcpyAsync(&d_key_array[0][b*(pinned_M_size/2)],
@@ -164,9 +170,11 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
             else if (i > 0 && s == 0) {
                 //Overlapping
                 for (int b = 0; b < number_of_buffers; b++) {
-                    std::memcpy(pinned_M[0],
-                                &h_key_array[start_index_s0+b*(pinned_M_size/2)],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(pinned_M[0],
+                    //            &h_key_array[start_index_s0+b*(pinned_M_size/2)],
+                    //            (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(pinned_M[0], &h_key_array[start_index_s0+b*(pinned_M_size/2)], pinned_M_size/2, mem_threads);
                     
                     cudaMemcpyAsync(pinned_M[1],
                                     &d_key_array[1][b*(pinned_M_size/2)],
@@ -175,9 +183,11 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
                                     streams[1]);
                     cudaStreamSynchronize(streams[1]);
                     
-                    std::memcpy(&h_key_array[start_index_s2+b*(pinned_M_size/2)],
-                                pinned_M[1],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(&h_key_array[start_index_s2+b*(pinned_M_size/2)],
+                        //        pinned_M[1],
+                        //        (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(&h_key_array[start_index_s2+b*(pinned_M_size/2)], pinned_M[1], pinned_M_size/2, mem_threads);
                     
                     cudaMemcpyAsync(&d_key_array[0][b*(pinned_M_size/2)],
                                     pinned_M[0],
@@ -193,9 +203,11 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
             else if (s == 1) {
                 //Overlapping
                 for (int b = 0; b < number_of_buffers; b++) {
-                    std::memcpy(pinned_M[1],
-                                &h_key_array[start_index_s1+b*(pinned_M_size/2)],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(pinned_M[1],
+                    //            &h_key_array[start_index_s1+b*(pinned_M_size/2)],
+                    //            (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(pinned_M[1], &h_key_array[start_index_s1+b*(pinned_M_size/2)], pinned_M_size/2, mem_threads);
                     
                     cudaMemcpyAsync(pinned_M[0],
                                     &d_key_array[0][b*(pinned_M_size/2)],
@@ -204,9 +216,11 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
                                     streams[0]);
                     cudaStreamSynchronize(streams[0]);
                     
-                    std::memcpy(&h_key_array[start_index_s0+b*(pinned_M_size/2)],
-                                pinned_M[0],
-                                (pinned_M_size/2)*sizeof(uint64_t));
+                    //std::memcpy(&h_key_array[start_index_s0+b*(pinned_M_size/2)],
+                        //        pinned_M[0],
+                        //        (pinned_M_size/2)*sizeof(uint64_t));
+                    
+                    ParMemcpy(&h_key_array[start_index_s0+b*(pinned_M_size/2)], pinned_M[0], pinned_M_size/2, mem_threads);
                     
                     cudaMemcpyAsync(&d_key_array[1][b*(pinned_M_size/2)],
                                     pinned_M[1],
@@ -227,9 +241,12 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
                                         streams[1]);
                         cudaStreamSynchronize(streams[1]);
                         
-                        std::memcpy(&h_key_array[start_index_s1+b*(pinned_M_size/2)],
-                                    pinned_M[1],
-                                    (pinned_M_size/2)*sizeof(uint64_t));
+                        //std::memcpy(&h_key_array[start_index_s1+b*(pinned_M_size/2)],
+                            //        pinned_M[1],
+                            //        (pinned_M_size/2)*sizeof(uint64_t));
+                        
+                        ParMemcpy(&h_key_array[start_index_s1+b*(pinned_M_size/2)], pinned_M[1], pinned_M_size/2, mem_threads);
+                        
                         cudaStreamSynchronize(streams[1]);
                     }
                 }
