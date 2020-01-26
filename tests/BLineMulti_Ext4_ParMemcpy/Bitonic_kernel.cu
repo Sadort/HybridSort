@@ -18,7 +18,8 @@ void ParMemcpy(uint64_t *dest, uint64_t *src, int number_of_elements, int nthrea
 void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number_of_elements, uint64_t batch_size, int nthreads)
 {
     int number_of_batches = number_of_elements / batch_size;
-    int mem_threads = (int)exp2((int)log2(nthreads));
+    int mem_threads = (int)log2((float)nthreads);
+    mem_threads = (int)exp2((float)mem_threads);
     
     uint64_t *pinned_M[2];
 
