@@ -24,6 +24,9 @@ void ParMemcpy(ulong2 *dest, ulong2 *src, int number_of_elements, int nthreads)
 
 void PairMerge(ulong2 *key_array_1, ulong2 *key_array_2, uint64_t batch_size, int nthreads)
 {
+    int mem_threads = (int)log2((float)nthreads);
+    mem_threads = (int)exp2((float)mem_threads);
+
     omp_set_dynamic(false);
     omp_set_num_threads(nthreads);
     nvtxRangeId_t id1 = nvtxRangeStart("Pairwise-merge");
