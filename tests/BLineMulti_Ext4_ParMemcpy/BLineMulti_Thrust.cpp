@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <nvToolsExt.h>
 
-uint64_t number_of_elements = 2048L*1024*1024;
+uint64_t number_of_elements = 512L*1024*1024;
 uint64_t batch_size = 256L*1024*1024;
 int nthreads = 20;
 int nstreams = 2;
