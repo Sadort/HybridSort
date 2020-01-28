@@ -23,6 +23,9 @@ void ParMemcpy(uint64_t *dest, uint64_t *src, int number_of_elements, int nthrea
 
 void PairMerge(uint64_t *key_array_1, uint64_t *key_array_2, uint64_t batch_size, int nthreads)
 {
+    int mem_threads = (int)log2((float)nthreads);
+    mem_threads = (int)exp2((float)mem_threads);
+
     omp_set_dynamic(false);
     omp_set_num_threads(nthreads);
     nvtxRangeId_t id1 = nvtxRangeStart("Pairwise-merge");
