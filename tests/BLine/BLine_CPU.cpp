@@ -4,13 +4,14 @@
 #include <iostream>
 #include <omp.h>
 #include <sys/time.h>
+#include <cuda_runtime.h>
 #include "type.h"
 
 #define nthreads 8
 
 int main()
 {
-    uint64_t number_of_elements = 2048*1024*1024;
+    uint64_t number_of_elements = 2048L*1024*1024;
     std::vector<ulong2> h_key_array(number_of_elements);
     
     for (uint64_t i = 0; i < number_of_elements; i++) {

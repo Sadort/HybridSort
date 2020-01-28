@@ -10,7 +10,7 @@
 void ThrustSort(ulong2 *h_key_array, ulong2 *d_key_array, uint64_t number_of_elements, uint64_t batch_size);
 
 uint64_t number_of_elements = 2048L*1024*1024;
-uint64_t batch_size = 512L*1024*1024;
+uint64_t batch_size = 256L*1024*1024;
 int nthreads = 8;
 
 int main(void)
