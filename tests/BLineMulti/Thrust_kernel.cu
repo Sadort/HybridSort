@@ -4,17 +4,18 @@
 #include <thrust/sort.h>
 #include <thrust/device_ptr.h>
 #include <algorithm>
+#include "type.h"
 
-void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array, uint64_t number_of_elements, uint64_t batch_size)
+void ThrustSort(ulong2 *h_key_array, ulong2 *d_key_array, uint64_t number_of_elements, uint64_t batch_size)
 {
     int number_of_batches = number_of_elements / batch_size;
 
-    cudaMalloc( (void**)&d_key_array, batch_size * sizeof(uint64_t) );
+    cudaMalloc( (void**)&d_key_array, batch_size * sizeof(ulong2) );
     cudaMemcpy( d_key_array,
                 h_key_array,
-                batch_size * sizeof(uint64_t),
+                batch_size * sizeof(ulong2),
                 cudaMemcpyHostToDevice );
-    thrust::device_ptr<uint64_t> th_key_array( d_key_array );
+    thrust::device_ptr<ulong2> th_key_array( d_key_array );
 
     for (int i = 0; i < number_of_batches; i++)
     {        
@@ -23,18 +24,18 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array, uint64_t number_of
         
         cudaMemcpy( &h_key_array[i*batch_size],
                 d_key_array,
-                batch_size * sizeof(uint64_t),
+                batch_size * sizeof(ulong2),
                 cudaMemcpyDeviceToHost );
         cudaDeviceSynchronize();
         
-	if(i == number_of_batches-1)
-	    break;
+        if(i == number_of_batches-1)
+            break;
 
-	cudaMemcpy( d_key_array,
+        cudaMemcpy( d_key_array,
                 &h_key_array[(i+1)*batch_size],
-                batch_size * sizeof(uint64_t),
+                batch_size * sizeof(ulong2),
                 cudaMemcpyHostToDevice );
-	cudaDeviceSynchronize();
+        cudaDeviceSynchronize();
         
     }
    

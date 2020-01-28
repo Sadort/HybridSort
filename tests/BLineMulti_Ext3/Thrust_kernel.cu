@@ -11,6 +11,7 @@
 #include <thrust/device_ptr.h>
 #include <map>
 #include <cassert>
+#include "type.h"
 
 #define start_index_s0 2*i*batch_size
 #define start_index_s1 2*i*batch_size+batch_size
@@ -19,7 +20,7 @@
 #define merge_index_1 2*(i-1)*batch_size
 #define merge_index_2 2*(i-1)*batch_size+batch_size
 
-void PairMerge(uint64_t *key_array_1, uint64_t *key_array_2, uint64_t batch_size, int nthreads);
+void PairMerge(ulong2 *key_array_1, ulong2 *key_array_2, uint64_t batch_size, int nthreads);
 
 // cached_allocator: a simple allocator for caching allocation requests
 class cached_allocator
@@ -119,24 +120,24 @@ class cached_allocator
 
 };
 
-void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number_of_elements, uint64_t batch_size, int nthreads)
+void ThrustSort(ulong2 *h_key_array, ulong2 *d_key_array[2], uint64_t number_of_elements, uint64_t batch_size, int nthreads)
 {
     cached_allocator alloc;
     int number_of_batches = number_of_elements / batch_size;
     
-    uint64_t *pinned_M[2];
+    ulong2 *pinned_M[2];
 
-    cudaMalloc( (void**)&d_key_array[0], batch_size * sizeof(uint64_t) );
-    cudaMalloc( (void**)&d_key_array[1], batch_size * sizeof(uint64_t) );
-    cudaHostAlloc( (void**)&pinned_M[0], batch_size * sizeof(uint64_t), cudaHostAllocDefault );
-    cudaHostAlloc( (void**)&pinned_M[1], batch_size * sizeof(uint64_t), cudaHostAllocDefault );
+    cudaMalloc( (void**)&d_key_array[0], batch_size * sizeof(ulong2) );
+    cudaMalloc( (void**)&d_key_array[1], batch_size * sizeof(ulong2) );
+    cudaHostAlloc( (void**)&pinned_M[0], batch_size * sizeof(ulong2), cudaHostAllocDefault );
+    cudaHostAlloc( (void**)&pinned_M[1], batch_size * sizeof(ulong2), cudaHostAllocDefault );
     
     cudaStream_t streams[2];
     for (int s = 0; s < 2; s++) {
         cudaStreamCreate(&streams[s]);
     }
     
-    thrust::device_ptr<uint64_t> th_key_array[2];
+    thrust::device_ptr<ulong2> th_key_array[2];
     for (int s = 0; s < 2; s++) {
         th_key_array[s] = thrust::device_pointer_cast(d_key_array[s]);
     }
@@ -146,7 +147,7 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
             if (i == 0 && s == 0) {
                 cudaMemcpyAsync(d_key_array[0],
                                 &h_key_array[start_index_s0],
-                                batch_size*sizeof(uint64_t),
+                                batch_size*sizeof(ulong2),
                                 cudaMemcpyHostToDevice,
                                 streams[0]);
                 cudaDeviceSynchronize();
@@ -157,23 +158,23 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
             {
                 std::memcpy(pinned_M[0],
                             &h_key_array[start_index_s0],
-                            batch_size*sizeof(uint64_t));
+                            batch_size*sizeof(ulong2));
                 
                 cudaMemcpyAsync(d_key_array[0],
                                 pinned_M[0],
-                                batch_size*sizeof(uint64_t),
+                                batch_size*sizeof(ulong2),
                                 cudaMemcpyHostToDevice,
                                 streams[0]);
                 cudaMemcpyAsync(pinned_M[1],
                                 d_key_array[1],
-                                batch_size*sizeof(uint64_t),
+                                batch_size*sizeof(ulong2),
                                 cudaMemcpyDeviceToHost,
                                 streams[1]);
                 cudaDeviceSynchronize();
                 
                 std::memcpy(&h_key_array[start_index_s2],
                             pinned_M[1],
-                            batch_size*sizeof(uint64_t));
+                            batch_size*sizeof(ulong2));
                 
                 thrust::sort(thrust::cuda::par(alloc).on(streams[0]), th_key_array[0], th_key_array[0]+batch_size);
                 PairMerge(&h_key_array[merge_index_1], &h_key_array[merge_index_2], batch_size, nthreads);
@@ -183,23 +184,23 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
             {
                 std::memcpy(pinned_M[1],
                             &h_key_array[start_index_s1],
-                            batch_size*sizeof(uint64_t));
+                            batch_size*sizeof(ulong2));
                 
                 cudaMemcpyAsync(d_key_array[1],
                                 pinned_M[1],
-                                batch_size*sizeof(uint64_t),
+                                batch_size*sizeof(ulong2),
                                 cudaMemcpyHostToDevice,
                                 streams[1]);
                 cudaMemcpyAsync(pinned_M[0],
                                 d_key_array[0],
-                                batch_size*sizeof(uint64_t),
+                                batch_size*sizeof(ulong2),
                                 cudaMemcpyDeviceToHost,
                                 streams[0]);
                 cudaDeviceSynchronize();
                 
                 std::memcpy(&h_key_array[start_index_s0],
                             pinned_M[0],
-                            batch_size*sizeof(uint64_t));
+                            batch_size*sizeof(ulong2));
                 
                 thrust::sort(thrust::cuda::par(alloc).on(streams[1]), th_key_array[1], th_key_array[1]+batch_size);
                 cudaDeviceSynchronize();
@@ -208,7 +209,7 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
                 {
                     cudaMemcpyAsync(&h_key_array[start_index_s1],
                                     d_key_array[1],
-                                    batch_size*sizeof(uint64_t),
+                                    batch_size*sizeof(ulong2),
                                     cudaMemcpyDeviceToHost,
                                     streams[1]);
                     cudaDeviceSynchronize();

@@ -6,8 +6,9 @@
 #include <cuda_runtime.h>
 #include <nvToolsExt.h>
 #include <sys/time.h>
+#include "type.h"
 
-void ParMemcpy(uint64_t *dest, uint64_t *src, int number_of_elements, int nthreads)
+void ParMemcpy(ulong2 *dest, ulong2 *src, int number_of_elements, int nthreads)
 {
     omp_set_dynamic(false);
     omp_set_num_threads(nthreads);
@@ -16,7 +17,7 @@ void ParMemcpy(uint64_t *dest, uint64_t *src, int number_of_elements, int nthrea
             int tid = omp_get_thread_num();
             int len = number_of_elements / nthreads;
             int start_ind = tid * len;
-            std::memcpy(&dest[start_ind], &src[start_ind], len*sizeof(uint64_t));
+            std::memcpy(&dest[start_ind], &src[start_ind], len*sizeof(ulong2));
     }
     return;
 }

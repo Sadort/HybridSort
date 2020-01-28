@@ -5,27 +5,29 @@
 #include <sys/time.h>
 #include <cuda_runtime.h>
 #include <nvToolsExt.h>
+#include "type.h"
 
-void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nstreams);
+void ThrustSort(ulong2 *h_key_array, ulong2 *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nstreams);
 
 uint64_t number_of_elements = 2048L*1024*1024;
 uint64_t batch_size = 256L*1024*1024;
 uint64_t pinned_M_size = 2L*1024*1024;
-int nthreads = 20;
+int nthreads = 8;
 int nstreams = 2;
 
 int main(void)
 {
     int number_of_batches = number_of_elements / batch_size;
-    uint64_t *h_key_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
-    uint64_t *sorted_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
-    uint64_t *d_key_array[2];
+    ulong2 *h_key_array = (ulong2 *)malloc(number_of_elements*sizeof(ulong2));
+    ulong2 *sorted_array = (ulong2 *)malloc(number_of_elements*sizeof(ulong2));
+    ulong2 *d_key_array[2];
 
     for (uint64_t i = 0; i < number_of_elements; i++) {
-        h_key_array[i] = ((uint64_t)rand()) << 32 | (uint64_t)rand();
+        h_key_array[i].x = ((uint64_t)rand()) << 32 | (uint64_t)rand();
+        h_key_array[i].y = ((uint64_t)rand()) << 32 | (uint64_t)rand();
     }
     
-    printf("size : %lu\n", sizeof(uint64_t));
+    printf("size : %lu\n", sizeof(ulong2));
 
     /**************************/
     /* Sorting batches on GPU */
@@ -50,7 +52,7 @@ int main(void)
 
     struct timeval CPUstart;
     gettimeofday(&CPUstart, NULL);
-    std::vector< std::pair<uint64_t*, uint64_t*> > batches;
+    std::vector< std::pair<ulong2*, ulong2*> > batches;
     for (int i = 0; i < number_of_batches; i++)
     {
         batches.push_back(std::make_pair(&h_key_array[i*batch_size], &h_key_array[(i+1)*batch_size]));
@@ -61,7 +63,7 @@ int main(void)
     nvtxRangeId_t id0 = nvtxRangeStart("Multiway-merge");
 
     //printf("Real number of threads: %d\n", omp_get_num_threads());
-    __gnu_parallel::multiway_merge(batches.begin(), batches.end(), sorted_array, number_of_elements, std::less<uint64_t>());
+    __gnu_parallel::multiway_merge(batches.begin(), batches.end(), sorted_array, number_of_elements, std::less<ulong2>());
 
     nvtxRangeEnd(id0);
     //double end = omp_get_wtime();
@@ -70,12 +72,6 @@ int main(void)
 
     printf("Elapsed time on GPU: %f s.\n", (GPU_milliseconds/1000));
     printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
-
-//    std::vector<uint64_t> h_key_ref(h_key_array, h_key_array+number_of_elements);
-//    std::sort(h_key_ref.begin(), h_key_ref.end());
-//    std::vector<uint64_t> sorted_v(sorted_array, sorted_array+number_of_elements);
-//    bool result = (sorted_v == h_key_ref);
-//    printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");
 
     return 0;
 }

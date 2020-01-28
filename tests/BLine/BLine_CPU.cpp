@@ -4,16 +4,18 @@
 #include <iostream>
 #include <omp.h>
 #include <sys/time.h>
+#include "type.h"
 
 #define nthreads 8
 
 int main()
 {
-    uint64_t number_of_elements = 2100L*1024*1024;
-    std::vector<uint64_t> h_key_array(number_of_elements);
+    uint64_t number_of_elements = 2048*1024*1024;
+    std::vector<ulong2> h_key_array(number_of_elements);
     
     for (uint64_t i = 0; i < number_of_elements; i++) {
-	h_key_array[i] = ((uint64_t)rand()) << 32 | (uint64_t)rand();
+        h_key_array[i].x = ((uint64_t)rand()) << 32 | (uint64_t)rand();
+        h_key_array[i].y = ((uint64_t)rand()) << 32 | (uint64_t)rand();
     }
 
     //double start = omp_get_wtime();
