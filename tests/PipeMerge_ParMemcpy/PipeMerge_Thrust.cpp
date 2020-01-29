@@ -5,12 +5,14 @@
 #include <cuda_runtime.h>
 #include <sys/time.h>
 #include <nvToolsExt.h>
-#include "type.h"
 
-uint64_t number_of_elements = 2048L*1024*1024;
-uint64_t batch_size = 256L*1024*1024;
+uint64_t number_of_elements = 512L*1024*1024;
+uint64_t batch_size = 128L*1024*1024;
 uint64_t pinned_M_size = 2L*1024*1024;
 int nthreads = 8;
+
+extern const unsigned long MASK;
+extern __host__ __device__ bool operator<(const ulong2 &a, const ulong2 &b);
 
 void ThrustSort(ulong2 *h_key_array, ulong2 *d_key_array[], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size, int nthreads);
 
@@ -77,6 +79,8 @@ int main(void)
 
     printf("Elapsed time on GPU: %f s.\n", (GPU_milliseconds/1000));
     printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
+
+    printf("Test: %s\n", std::is_sorted(sorted_array, sorted_array+number_of_elements) == true ? "SUCCESS" : "FAIL");
 
     return 0;
 }

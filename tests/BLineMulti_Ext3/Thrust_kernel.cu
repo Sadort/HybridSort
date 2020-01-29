@@ -20,6 +20,9 @@
 #define merge_index_1 2*(i-1)*batch_size
 #define merge_index_2 2*(i-1)*batch_size+batch_size
 
+//extern const unsigned long MASK;
+//extern __host__ __device__ bool operator<(const ulong2 &a, const ulong2 &b);
+
 void PairMerge(ulong2 *key_array_1, ulong2 *key_array_2, uint64_t batch_size, int nthreads);
 
 // cached_allocator: a simple allocator for caching allocation requests

@@ -6,7 +6,9 @@
 #include <cuda_runtime.h>
 #include <nvToolsExt.h>
 #include <sys/time.h>
-#include "type.h"
+
+extern const unsigned long MASK;
+extern __host__ __device__ bool operator<(const ulong2 &a, const ulong2 &b);
 
 void PairMerge(ulong2 *key_array_1, ulong2 *key_array_2, uint64_t batch_size, int nthreads)
 {

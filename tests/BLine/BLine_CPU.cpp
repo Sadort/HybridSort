@@ -11,7 +11,7 @@
 
 int main()
 {
-    uint64_t number_of_elements = 2048L*1024*1024;
+    uint64_t number_of_elements = 512L*1024*1024;
     std::vector<ulong2> h_key_array(number_of_elements);
     
     for (uint64_t i = 0; i < number_of_elements; i++) {

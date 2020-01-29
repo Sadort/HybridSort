@@ -6,7 +6,9 @@
 #include <cuda_runtime.h>
 #include <nvToolsExt.h>
 #include <sys/time.h>
-#include "type.h"
+
+extern const unsigned long MASK;
+extern __host__ __device__ bool operator<(const ulong2 &a, const ulong2 &b);
 
 void ParMemcpy(ulong2 *dest, ulong2 *src, int number_of_elements, int nthreads)
 {

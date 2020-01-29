@@ -13,7 +13,7 @@ using namespace std;
 
 int main(void)
 {
-    uint64_t number_of_elements = 350L*1024*1024;
+    uint64_t number_of_elements = 256L*1024*1024;
     ulong2 *h_key_array = (ulong2 *)malloc(number_of_elements*sizeof(ulong2));
     ulong2 *d_key_array;
 
