@@ -145,8 +145,11 @@ void ThrustSort(ulong2 *h_key_array, ulong2 *d_key_array[2], uint64_t number_of_
     for (int i = 0; i < number_of_batches / 2; i++) {
         for (int s = 0; s < 2; s++) {
             if (i == 0 && s == 0) {
+                std::memcpy(pinned_M[0],
+                            &h_key_array[start_index_s0],
+                            batch_size*sizeof(ulong2));
                 cudaMemcpyAsync(d_key_array[0],
-                                &h_key_array[start_index_s0],
+                                pinned_M[0],
                                 batch_size*sizeof(ulong2),
                                 cudaMemcpyHostToDevice,
                                 streams[0]);
@@ -208,11 +211,14 @@ void ThrustSort(ulong2 *h_key_array, ulong2 *d_key_array[2], uint64_t number_of_
                             batch_size*sizeof(ulong2));
             }
             else if (s == 1 && i == (number_of_batches / 2) - 1) {
-                cudaMemcpyAsync(&h_key_array[start_index_s1],
+                cudaMemcpyAsync(pinned_M[1],
                                 d_key_array[1],
                                 batch_size*sizeof(ulong2),
                                 cudaMemcpyDeviceToHost,
                                 streams[1]);
+                std::memcpy(&h_key_array[start_index_s1],
+                            pinned_M[1],
+                            batch_size*sizeof(ulong2));
                 cudaDeviceSynchronize();
             }
         }
