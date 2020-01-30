@@ -16,7 +16,7 @@
 
 #define start_index_s0 2*i*batch_size
 #define start_index_s1 2*i*batch_size+batch_size
-#define start_index_s2 2*i*batch_size-batch_size
+#define start_index_s2 2*i*batch_size+2*batch_size
 
 #define merge_index_1 2*(i-1)*batch_size
 #define merge_index_2 2*(i-1)*batch_size+batch_size
