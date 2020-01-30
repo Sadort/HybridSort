@@ -7,7 +7,7 @@
 
 #define start_index_s0 2*i*batch_size
 #define start_index_s1 2*i*batch_size+batch_size
-#define start_index_s2 2*i*batch_size-batch_size
+#define start_index_s2 2*i*batch_size+2*batch_size
 
 void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number_of_elements, uint64_t batch_size, int nstreams = 2)
 {
