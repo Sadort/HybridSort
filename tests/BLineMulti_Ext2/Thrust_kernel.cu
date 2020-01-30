@@ -15,7 +15,7 @@
 
 #define start_index_s0 2*i*batch_size
 #define start_index_s1 2*i*batch_size+batch_size
-#define start_index_s2 2*i*batch_size-batch_size
+#define start_index_s2 2*i*batch_size+2*batch_size
 
 // cached_allocator: a simple allocator for caching allocation requests
 class cached_allocator
