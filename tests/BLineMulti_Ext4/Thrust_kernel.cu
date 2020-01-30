@@ -216,10 +216,11 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number
                                 batch_size*sizeof(uint64_t),
                                 cudaMemcpyDeviceToHost,
                                 streams[1]);
+                cudaDeviceSynchronize();
                 std::memcpy(&h_key_array[start_index_s1],
                             pinned_M[1],
                             batch_size*sizeof(uint64_t));
-                cudaDeviceSynchronize();
+                
             }
         }
     }
