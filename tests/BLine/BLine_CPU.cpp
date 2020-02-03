@@ -31,7 +31,7 @@ int main()
     #pragma omp parallel
     {
         uint64_t tid = omp_get_thread_num();
-        uint64_t len = number_of_elements / nthreads;
+        uint64_t len = number_of_elements / mem_threads;
         uint64_t start_ind = tid * len;
         for (uint64_t i = start_ind; i < start_ind + len; i++) {
             indices[i] = i;
@@ -51,7 +51,7 @@ int main()
     #pragma omp parallel
     {
         uint64_t tid = omp_get_thread_num();
-        uint64_t len = number_of_elements / nthreads;
+        uint64_t len = number_of_elements / mem_threads;
         uint64_t start_ind = tid * len;
         for (uint64_t i = start_ind; i < start_ind + len; i++) {
             sorted_key[i] = h_key_array[indices[i]];
