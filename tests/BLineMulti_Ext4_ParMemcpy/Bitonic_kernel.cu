@@ -36,8 +36,9 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
     for (int i = 0; i < number_of_batches / 2; i++) {
         for (int s = 0; s < 2; s++) {
             if (i == 0 && s == 0) {
+                ParMemcpy(pinned_M[0], &h_key_array[start_index_s0], batch_size, mem_threads);
                 cudaMemcpyAsync(d_key_array[0],
-                                &h_key_array[start_index_s0],
+                                pinned_M[0],
                                 batch_size*sizeof(uint64_t),
                                 cudaMemcpyHostToDevice,
                                 streams[0]);
@@ -105,12 +106,14 @@ void BitonicSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t numbe
                 //            batch_size*sizeof(uint64_t));
             }
             else if (s == 1 && i == (number_of_batches / 2) - 1) {
-                cudaMemcpyAsync(&h_key_array[start_index_s1],
+                cudaMemcpyAsync(pinned_M[1],
                                 d_key_array[1],
                                 batch_size*sizeof(uint64_t),
                                 cudaMemcpyDeviceToHost,
                                 streams[1]);
                 cudaDeviceSynchronize();
+                ParMemcpy(&h_key_array[start_index_s1], pinned_M[1], batch_size, mem_threads);
+               
             }
         }
     }
