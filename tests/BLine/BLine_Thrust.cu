@@ -13,7 +13,7 @@ using namespace std;
 
 int main(void)
 {
-    uint64_t number_of_elements = 350L*1024*1024;
+    uint64_t number_of_elements = 32L;
     uint64_t *h_key_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
     uint64_t *h_value_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
     uint64_t *d_key_array;
@@ -65,7 +65,8 @@ int main(void)
 
     printf("Elapsed time: %f s.\n", milliseconds/1000);
 
-    printf("Test: %s\n", std::is_sorted(sorted_array, sorted_array+number_of_elements) == true ? "SUCCESS" : "FAIL");
+    printf("Test: %s\n", std::is_sorted(h_key_array, h_key_array+number_of_elements) == true ? "SUCCESS" : "FAIL");
+
     //std::sort(h_key_ref.begin(), h_key_ref.end());
     //bool result = compareAB(h_key_array, h_key_ref);
     //printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");
