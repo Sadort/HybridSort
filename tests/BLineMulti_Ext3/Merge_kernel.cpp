@@ -37,6 +37,8 @@ void PairMerge(uint64_t *key_array, uint64_t *value_array, uint64_t batch_size, 
 
     __gnu_parallel::multiway_merge(batches.begin(), batches.end(), sorted_indices, 2*batch_size, SortIndices(key_array));
 
+    nvtxRangeEnd(id1);
+
     free(indices);
     omp_set_dynamic(false);
     omp_set_num_threads(mem_threads);
@@ -57,7 +59,7 @@ void PairMerge(uint64_t *key_array, uint64_t *value_array, uint64_t batch_size, 
     std::memcpy(key_array, sorted_key, (2*batch_size)*sizeof(uint64_t));
     std::memcpy(value_array, sorted_value, (2*batch_size)*sizeof(uint64_t));
 
-    nvtxRangeEnd(id1);
-
+    free(sorted_key);
+    free(sorted_value);
     return;
 }
