@@ -7,8 +7,8 @@
 #include <nvToolsExt.h>
 #include "type.h"
 
-uint64_t number_of_elements = 2048L*1024*1024;
-uint64_t batch_size = 256L*1024*1024;
+uint64_t number_of_elements = 1024L*1024*1024;
+uint64_t batch_size = 128L*1024*1024;
 int nthreads = 20;
 int nstreams = 2;
 
@@ -45,7 +45,6 @@ int main(void)
     cudaEventRecord(GPUstop, 0);
     cudaEventSynchronize(GPUstop);
     cudaEventElapsedTime(&GPU_milliseconds, GPUstart, GPUstop);
-
     /**************************/
     /* Merging batches on GPU */
     /**************************/
@@ -73,7 +72,7 @@ int main(void)
     std::vector< std::pair<uint64_t*, uint64_t*> > batches;
     for (int i = 0; i < number_of_batches; i++)
     {
-        batches.push_back(std::make_pair(&h_key_array[i*batch_size], &h_key_array[(i+1)*batch_size]));
+        batches.push_back(std::make_pair(&indices[i*batch_size], &indices[(i+1)*batch_size]));
     }
 
     omp_set_dynamic(false);
