@@ -7,20 +7,20 @@
 #include <nvToolsExt.h>
 #include "type.h"
 
-uint64_t number_of_elements = 2048L*1024*1024;
-uint64_t batch_size = 256L*1024*1024;
+uint64_t number_of_elements = 1024L*1024*1024;
+uint64_t batch_size = 128L*1024*1024;
 int nthreads = 20;
 int nstreams = 2;
 
-void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array, uint64_t *h_value_array, uint64_t *d_value_array, uint64_t number_of_elements, uint64_t batch_size);
+void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t *h_value_array, uint64_t *d_value_array[], uint64_t number_of_elements, uint64_t batch_size);
 
 int main(void)
 {
     int number_of_batches = number_of_elements / batch_size;
     uint64_t *h_key_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
     uint64_t *h_value_array = (uint64_t *)malloc(number_of_elements*sizeof(uint64_t));
-    uint64_t *d_key_array;
-    uint64_t *d_value_array;
+    uint64_t *d_key_array[2];
+    uint64_t *d_value_array[2];
 
     for (uint64_t i = 0; i < number_of_elements; i++) {
         h_key_array[i] = ((uint64_t)rand()) << 32 | (uint64_t)rand();
@@ -110,7 +110,7 @@ int main(void)
     printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
 
     printf("Test: %s\n", std::is_sorted(sorted_key, sorted_key+number_of_elements) == true ? "SUCCESS" : "FAIL");
-
+    
 //    std::vector<uint64_t> h_key_ref(sorted_array, sorted_array+number_of_elements);
 //    printf("Test: %s\n", std::is_sorted(h_key_ref.begin(), h_key_ref.end()) == true ? "SUCCESS" : "FAIL");
 
