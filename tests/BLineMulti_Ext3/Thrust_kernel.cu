@@ -150,16 +150,24 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t *h_val
     for (int i = 0; i < number_of_batches / 2; i++) {
         for (int s = 0; s < 2; s++) {
             if (i == 0 && s == 0) {
+                std::memcpy(pinned_key_M[0],
+                            &h_key_array[start_index_s0],
+                            batch_size*sizeof(uint64_t));
+                std::memcpy(pinned_value_M[0],
+                            &h_value_array[start_index_s0],
+                            batch_size*sizeof(uint64_t));
+
                 cudaMemcpyAsync(d_key_array[0],
-                                &h_key_array[start_index_s0],
+                                pinned_key_M[0],
                                 batch_size*sizeof(uint64_t),
                                 cudaMemcpyHostToDevice,
                                 streams[0]);
                 cudaMemcpyAsync(d_value_array[0],
-                                &h_value_array[start_index_s0],
+                                pinned_value_M[0],
                                 batch_size*sizeof(uint64_t),
                                 cudaMemcpyHostToDevice,
-                                streams[0]);
+                                streams[1]);
+
                 cudaDeviceSynchronize();
                 thrust::sort_by_key(thrust::cuda::par(alloc).on(streams[0]), th_key_array[0], th_key_array[0]+batch_size, th_value_array[0]);
                 cudaDeviceSynchronize();
@@ -250,17 +258,24 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t *h_val
 
                 if (i == (number_of_batches / 2) - 1)
                 {
-                    cudaMemcpyAsync(&h_key_array[start_index_s1],
+                    cudaMemcpyAsync(pinned_key_M[1],
                                     d_key_array[1],
                                     batch_size*sizeof(uint64_t),
                                     cudaMemcpyDeviceToHost,
                                     streams[1]);
-                    cudaMemcpyAsync(&h_value_array[start_index_s1],
+                    cudaMemcpyAsync(pinned_value_M[1],
                                     d_value_array[1],
                                     batch_size*sizeof(uint64_t),
                                     cudaMemcpyDeviceToHost,
-                                    streams[1]);
+                                    streams[0]);
                     cudaDeviceSynchronize();
+                    std::memcpy(&h_key_array[start_index_s1],
+                                pinned_key_M[1],
+                                batch_size*sizeof(uint64_t));
+                    std::memcpy(&h_value_array[start_index_s1],
+                                pinned_value_M[1],
+                                batch_size*sizeof(uint64_t));
+
                 }
             }
         }
