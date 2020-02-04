@@ -24,7 +24,7 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array, uint64_t *h_value_
 
     for (int i = 0; i < number_of_batches; i++)
     {
-        thrust::sort_by_key( th_key_array, th_key_array+number_of_elements, th_value_array );
+        thrust::sort_by_key( th_key_array, th_key_array+batch_size, th_value_array );
         //thrust::sort( th_key_array, th_key_array+batch_size );
 
         cudaMemcpy( &h_key_array[i*batch_size],

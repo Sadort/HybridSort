@@ -108,7 +108,8 @@ int main(void)
     printf("Elapsed time on GPU: %f s.\n", (GPU_milliseconds/1000));
     printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
 
-    printf("Test: %s\n", std::is_sorted(sorted_array, sorted_array+number_of_elements) == true ? "SUCCESS" : "FAIL");
+    printf("Test: %s\n", std::is_sorted(sorted_key, sorted_key+number_of_elements) == true ? "SUCCESS" : "FAIL");
+
     //std::sort(h_key_ref.begin(), h_key_ref.end());
     //bool result = (sorted_v == h_key_ref);
     //printf("Test: %s\n", result == true ? "SUCCESS" : "FAIL");
