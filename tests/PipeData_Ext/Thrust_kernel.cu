@@ -115,7 +115,7 @@ class cached_allocator
 };
 
 
-void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size)
+void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[2], uint64_t *h_value_array, uint64_t *d_value_array[2], uint64_t number_of_elements, uint64_t batch_size, uint64_t pinned_M_size)
 {
     cached_allocator alloc;
     int number_of_batches = number_of_elements / batch_size;
