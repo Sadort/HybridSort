@@ -23,10 +23,8 @@ int main(void)
     uint64_t *d_value_array[2];
 
     for (uint64_t i = 0; i < number_of_elements; i++) {
-        //h_key_array[i] = ((uint64_t)rand()) << 32 | (uint64_t)rand();
-        //h_value_array[i] = h_key_array[i];
-        h_key_array[i] = 2*(number_of_elements-i);
-        h_value_array[i] = h_key_array[i]+100;
+        h_key_array[i] = ((uint64_t)rand()) << 32 | (uint64_t)rand();
+        h_value_array[i] = h_key_array[i];
     }
 
     printf("size : %lu\n", sizeof(uint64_t));
@@ -104,7 +102,7 @@ int main(void)
         }
     }
     free(sorted_indices);
-    
+
     struct timeval CPUend;
     gettimeofday(&CPUend, NULL);
 
@@ -112,9 +110,7 @@ int main(void)
     printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
 
     printf("Test: %s\n", (std::is_sorted(sorted_key, sorted_key+number_of_elements) && std::is_sorted(sorted_value, sorted_value+number_of_elements)) == true ? "SUCCESS" : "FAIL");
-    for (uint64_t i = 0; i < number_of_elements; i++) {
-        printf("(%lu, %lu)", sorted_key[i], sorted_value[i]);
-    }
+
 //    std::vector<uint64_t> h_key_ref(h_key_array, h_key_array+number_of_elements);
 //    std::sort(h_key_ref.begin(), h_key_ref.end());
 //    std::vector<uint64_t> sorted_v(sorted_array, sorted_array+number_of_elements);
