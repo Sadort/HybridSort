@@ -7,8 +7,8 @@
 #include <nvToolsExt.h>
 #include "type.h"
 
-uint64_t number_of_elements = 2048L*1024*1024;
-uint64_t batch_size = 256L*1024*1024;
+uint64_t number_of_elements = 1024L*1024*1024;
+uint64_t batch_size = 128L*1024*1024;
 uint64_t pinned_M_size = 2L*1024*1024;
 int nthreads = 20;
 
@@ -116,6 +116,7 @@ int main(void)
     printf("Elapsed time on CPU: %f s.\n", ((CPUend.tv_sec - CPUstart.tv_sec) * 1000000u + CPUend.tv_usec - CPUstart.tv_usec) / 1.e6 );
 
     printf("Test: %s\n", (std::is_sorted(sorted_key, sorted_key+number_of_elements) && std::is_sorted(sorted_value, sorted_value+number_of_elements)) == true ? "SUCCESS" : "FAIL");
+
 //    std::vector<uint64_t> h_key_ref(h_key_array, h_key_array+number_of_elements);
 //    std::sort(h_key_ref.begin(), h_key_ref.end());
 //    std::vector<uint64_t> sorted_v(sorted_array, sorted_array+number_of_elements);

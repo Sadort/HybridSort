@@ -218,7 +218,7 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t *h_valu
                     cudaStreamSynchronize(streams[0]);
                 }
                 thrust::sort_by_key(thrust::cuda::par(alloc).on(streams[0]), th_key_array[0], th_key_array[0]+batch_size, th_value_array[0]);
-                PairMerge(&h_key_array[merge_index_1], &h_key_array[merge_index_2], batch_size, nthreads);
+                PairMerge(&h_key_array[merge_index_1], &h_value_array[merge_index_1], batch_size, nthreads);
                 cudaStreamSynchronize(streams[0]);
             }
             else if (s == 1) {
@@ -257,7 +257,7 @@ void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t *h_valu
                     ParMemcpy(&h_value_array[start_index_s0+b*(pinned_M_size/2)], pinned_value_M[0], pinned_M_size/2, mem_threads);
                     cudaStreamSynchronize(streams[1]);
                 }
-                thrust::sort_by_key(thrust::cuda::par(alloc).on(streams[1]), th_key_array[1], th_key_array[1]+batch_size, th_key_array[1]);
+                thrust::sort_by_key(thrust::cuda::par(alloc).on(streams[1]), th_key_array[1], th_key_array[1]+batch_size, th_value_array[1]);
                 cudaStreamSynchronize(streams[1]);
 
                 if (i == (number_of_batches / 2) - 1) {
