@@ -8,7 +8,7 @@
 #include "type.h"
 
 uint64_t number_of_elements = 1024L*1024*1024;
-uint64_t batch_size = 128L;
+uint64_t batch_size = 128L*1024*1024;
 int nthreads = 20;
 
 void ThrustSort(uint64_t *h_key_array, uint64_t *d_key_array[], uint64_t *h_value_array, uint64_t *d_value_array[], uint64_t number_of_elements, uint64_t batch_size, int nthreads);
